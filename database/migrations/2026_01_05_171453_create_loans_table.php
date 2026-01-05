@@ -22,6 +22,7 @@ return new class extends Migration
             $table->foreignUuid('approved_by')->nullable()->constrained('users');
             $table->timestamp('approved_at')->nullable();
             $table->timestamps();
+
         });
     }
 
