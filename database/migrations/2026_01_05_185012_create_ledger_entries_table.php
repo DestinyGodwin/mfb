@@ -12,7 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('ledger_entries', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('account_id')->constrained();
+            $table->decimal('debit', 14, 2)->default(0);
+            $table->decimal('credit', 14, 2)->default(0);
+            $table->string('reference');
+            $table->foreignUuid('performed_by')->constrained('users');
             $table->timestamps();
         });
     }
