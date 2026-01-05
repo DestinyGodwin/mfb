@@ -7,14 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class BankAccount extends Model
 {
-   use HasUuids;
+    use HasUuids;
 
-    protected $fillable = [
-         'user_id',
-         'bank_name',
-         'account_number',
-        //  'routing_number',
-        //  'account_type',
-    ];
 
+    protected $fillable = ['user_id', 'bank_name', 'account_number'];
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

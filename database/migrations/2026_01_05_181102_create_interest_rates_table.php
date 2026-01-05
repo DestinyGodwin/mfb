@@ -11,15 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('contributions', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->foreignUuid('user_id')->constrained();
-            $table->decimal('amount', 14, 2);
-            $table->date('contribution_date');
-            $table->foreignUuid('recorded_by')->constrained('users');
+        Schema::create('interest_rates', function (Blueprint $table) {
+            $table->id();
             $table->timestamps();
-
-            
         });
     }
 
@@ -28,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('contributions');
+        Schema::dropIfExists('interest_rates');
     }
 };
