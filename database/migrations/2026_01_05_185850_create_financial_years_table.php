@@ -12,8 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('financial_years', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+            $table->uuid('id')->primary();
+            $table->year('year')->unique();
+            $table->boolean('closed')->default(false);
+            $table->timestamp('closed_at')->nullable();
+            $table->foreignUuid('closed_by')->nullable()->constrained('users');
         });
     }
 
