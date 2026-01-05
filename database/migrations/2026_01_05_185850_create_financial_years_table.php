@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('interest_rates', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->decimal('rate', 5, 2);
-            $table->boolean('active')->default(true);
+        Schema::create('financial_years', function (Blueprint $table) {
+            $table->id();
             $table->timestamps();
         });
     }
@@ -24,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('interest_rates');
+        Schema::dropIfExists('financial_years');
     }
 };
