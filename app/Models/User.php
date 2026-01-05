@@ -21,9 +21,19 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'first_name','last_name','email','password',
-        'date_of_birth','sex','phone','address',
-        'place_of_work','department', 'status', 'approved', 'avatar',
+        'first_name',
+        'last_name',
+        'email',
+        'password',
+        'date_of_birth',
+        'sex',
+        'phone',
+        'address',
+        'place_of_work',
+        'department',
+        'status',
+        'approved',
+        'avatar',
     ];
 
 
@@ -50,8 +60,30 @@ class User extends Authenticatable
         ];
     }
 
-     public function bankAccount()
+    public function bankAccount()
     {
         return $this->hasOne(BankAccount::class);
+    }
+
+    public function contributions()
+    {
+        return $this->hasMany(Contribution::class);
+    }
+    public function recordedContributions()
+    {
+        return $this->hasMany(Contribution::class, 'recorded_by');
+    }
+    public function loans()
+    {
+        return $this->hasMany(Loan::class);
+    }
+    public function ledgerEntries()
+    {
+        return $this->hasMany(LedgerEntry::class, 'performed_by');
+    }
+
+    public function isActive(): bool
+    {
+        return $this->approved && $this->status === 'active';
     }
 }
