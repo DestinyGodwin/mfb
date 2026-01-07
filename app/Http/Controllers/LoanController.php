@@ -2,19 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\Loan\RequestLoanRequest;
 use App\Services\LoanService;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\Loan\RequestLoanRequest;
 
 class LoanController extends Controller
 {
     public function index()
-    {
-        $loans = Auth::user()->loans()->latest()->get();
+{
+    $loans = Auth::user()
+        ->loans()
+        ->latest()
+        ->paginate(10);
 
-        return view('loans.index', compact('loans'));
-    }
+    return view('loans.index', compact('loans'));
+}
+
 
     public function store(RequestLoanRequest $request, LoanService $service)
     {
@@ -24,10 +27,8 @@ class LoanController extends Controller
             $request->duration_years
         );
 
-       return redirect()
+        return redirect()
             ->route('loans.index')
             ->with('status', 'Loan request submitted and awaiting approval');
     }
-
-    
 }

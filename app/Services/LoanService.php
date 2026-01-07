@@ -9,32 +9,40 @@ use App\Models\InterestRate;
 class LoanService
 {
     /**
-     * Create a new class instance.
+     * Create a loan (pending) — for user requests
      */
     public function create(array $data): Loan
     {
+        if (!isset($data['total_payable'])) {
+            $data['total_payable'] = $this->calculateTotal(
+                $data['principal'],
+                $data['interest_rate'],
+                $data['duration_years']
+            );
+        }
+
         return Loan::create([
             ...$data,
-            'status' => 'pending',
+            'status' => $data['status'] ?? 'pending',
         ]);
     }
 
-    public function userLoans(string $userId)
+    /**
+     * Create a loan by admin — auto approved
+     */
+    public function createByAdmin(array $data, User $admin): Loan
     {
-        return Loan::where('user_id', $userId)->latest()->get();
-    }
-
-    public function request(User $user, float $principal, int $years): Loan
-    {
-        $rate = InterestRate::where('active', true)->firstOrFail();
+        $data['total_payable'] = $this->calculateTotal(
+            $data['principal'],
+            $data['interest_rate'],
+            $data['duration_years']
+        );
 
         return Loan::create([
-            'user_id' => $user->id,
-            'principal' => $principal,
-            'interest_rate' => $rate->rate,
-            'duration_years' => $years,
-            'total_payable' => $this->calculateTotal($principal, $rate->rate, $years),
-            'status' => 'pending',
+            ...$data,
+            'status' => 'approved',
+            'approved_by' => $admin->id,
+            'approved_at' => now(),
         ]);
     }
 
@@ -49,9 +57,13 @@ class LoanService
         return $loan;
     }
 
+    public function userLoans(string $userId)
+    {
+        return Loan::where('user_id', $userId)->latest()->get();
+    }
+
     private function calculateTotal(float $principal, float $rate, int $years): float
     {
         return $principal + ($principal * ($rate / 100) * $years);
     }
 }
-

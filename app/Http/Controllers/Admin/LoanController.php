@@ -4,12 +4,20 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Loan;
 use App\Models\User;
-use Illuminate\Http\Request;
 use App\Services\LoanService;
+use App\Services\InterestRateService;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
 class LoanController extends Controller
 {
+    protected InterestRateService $interestRateService;
+
+    public function __construct(InterestRateService $interestRateService)
+    {
+        $this->interestRateService = $interestRateService;
+    }
+
     public function index(Request $request)
     {
         $query = Loan::with('user');
@@ -50,26 +58,35 @@ class LoanController extends Controller
         return view('admin.loans.create', compact('users'));
     }
 
-    public function store(Request $request, LoanService $service)
-    {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'principal' => 'required|numeric|min:1',
-            'interest_rate' => 'required|numeric|min:0',
-            'duration_years' => 'required|numeric|min:1',
-        ]);
+ public function store(Request $request, LoanService $service)
+{
+    $request->validate([
+        'user_id' => 'required|exists:users,id',
+        'principal' => 'required|numeric|min:1',
+        'duration_years' => 'required|numeric|min:1',
+    ]);
 
-        $service->create(
-            User::findOrFail($request->user_id),
-            $request->principal,
-            $request->interest_rate,
-            $request->duration_years,
-            $request->user()
-        );
-
-        return redirect()->route('admin.loans.index')
-            ->with('status', 'Loan created successfully.');
+    $interestRate = $this->interestRateService->active();
+    if (!$interestRate) {
+        return back()->withErrors(['interest_rate' => 'No active interest rate found. Please set one first.']);
     }
+
+    $data = [
+        'user_id' => $request->user_id,
+        'principal' => $request->principal,
+        'interest_rate' => $interestRate->rate,
+        'duration_years' => $request->duration_years,
+        'recorded_by' => $request->user()->id,
+    ];
+
+    // Use admin method — auto approved
+    $service->createByAdmin($data, $request->user());
+
+    return redirect()->route('admin.loans.index')
+        ->with('status', 'Loan created and approved successfully.');
+}
+
+
 
     public function approve(Loan $loan, LoanService $service)
     {

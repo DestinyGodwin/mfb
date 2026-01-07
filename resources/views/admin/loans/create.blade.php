@@ -29,12 +29,6 @@
                     </div>
 
                     <div>
-                        <x-input-label value="Interest Rate (%)" />
-                        <x-text-input name="interest_rate" type="number" class="w-full" required />
-                        <x-input-error :messages="$errors->get('interest_rate')" />
-                    </div>
-
-                    <div>
                         <x-input-label value="Duration (Years)" />
                         <x-text-input name="duration_years" type="number" class="w-full" required />
                         <x-input-error :messages="$errors->get('duration_years')" />

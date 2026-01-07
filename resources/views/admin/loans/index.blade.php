@@ -55,13 +55,14 @@
 
     {{-- Loans Table --}}
     <div class="bg-white shadow rounded overflow-x-auto">
-        <table class="w-full text-sm min-w-[700px]">
+        <table class="w-full text-sm min-w-[800px]">
             <thead class="bg-gray-50 border-b">
                 <tr>
                     <th class="p-3 text-left">User</th>
                     <th class="p-3 text-left">Amount</th>
                     <th class="p-3 text-left">Interest</th>
                     <th class="p-3 text-left">Duration</th>
+                    <th class="p-3 text-left">Total Payable</th>
                     <th class="p-3 text-left">Status</th>
                     <th class="p-3 text-left">Approved At</th>
                     <th class="p-3 text-left">Action</th>
@@ -74,6 +75,7 @@
                         <td class="p-3">₦{{ number_format($loan->principal, 2) }}</td>
                         <td class="p-3">{{ $loan->interest_rate }}%</td>
                         <td class="p-3">{{ $loan->duration_years }} yrs</td>
+                        <td class="p-3">₦{{ number_format($loan->total_payable, 2) }}</td>
                         <td class="p-3">{{ ucfirst($loan->status) }}</td>
                         <td class="p-3">{{ $loan->approved_at?->format('d M Y') ?? '—' }}</td>
                         <td class="p-3">
@@ -89,7 +91,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="text-center py-4 text-gray-500">
+                        <td colspan="8" class="text-center py-4 text-gray-500">
                             No loans found
                         </td>
                     </tr>
