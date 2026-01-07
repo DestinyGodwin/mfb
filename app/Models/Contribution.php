@@ -28,4 +28,16 @@ class Contribution extends Model
     {
         return $this->belongsTo(User::class, 'recorded_by');
     }
+
+    public function member()
+{
+    return $this->belongsTo(User::class, 'user_id');
+}
+
+// public function recorder()
+// {
+//     return $this->belongsTo(User::class, 'recorded_by');
+// }
+
+
 }

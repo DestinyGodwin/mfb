@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Builder;
 
 class User extends Authenticatable
 {
@@ -65,6 +66,10 @@ class User extends Authenticatable
         return $this->hasOne(BankAccount::class);
     }
 
+     public function scopeApproved(Builder $query): Builder
+    {
+        return $query->where('approved', true);
+    }
     public function contributions()
     {
         return $this->hasMany(Contribution::class);
