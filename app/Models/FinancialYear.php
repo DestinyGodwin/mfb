@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class FinancialYear extends Model
 {
- 
+
     use HasUuids;
     protected $fillable = ['year', 'closed', 'closed_at', 'closed_by'];
     public function closedBy()

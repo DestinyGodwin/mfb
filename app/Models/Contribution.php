@@ -16,7 +16,9 @@ class Contribution extends Model
         'contribution_date',
     ];
 
-
+    protected $casts = [
+        'contribution_date' => 'datetime',
+    ];
 
     public function user()
     {
