@@ -32,12 +32,12 @@ Route::get('/dashboard', function () {
 
     return view('dashboard', compact('year', 'yearlyContribution'));
 })
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+->middleware(['auth', 'verified'])
+->name('dashboard');
 
 /*
 |--------------------------------------------------------------------------
-| Authenticated User
+| Authenticated User Routes
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
@@ -47,18 +47,17 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // User Contributions (read-only)
-    Route::get('/contributions', [ContributionController::class, 'index'])
-        ->name('contributions.index');
+    // Contributions
+    Route::get('/contributions', [ContributionController::class, 'index'])->name('contributions.index');
 
-    // User Loans
+    // Loans
     Route::get('/loans', [LoanController::class, 'index'])->name('loans.index');
     Route::post('/loans', [LoanController::class, 'store'])->name('loans.store');
 });
 
 /*
 |--------------------------------------------------------------------------
-| Admin & Finance
+| Admin & Finance Routes
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin')
@@ -67,39 +66,28 @@ Route::prefix('admin')
     ->group(function () {
 
         // Dashboard
-        Route::get('/dashboard', [AdminDashboardController::class, 'index'])
-            ->name('dashboard');
-
-        // Members
-        Route::get('/members', [MemberController::class, 'index'])
-            ->name('members.index');
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
         // Loans
-        Route::get('/loans', [AdminLoanController::class, 'index'])
-            ->name('loans.index');
-        Route::get('/loans/create', [AdminLoanController::class, 'create'])
-            ->name('loans.create');
-        Route::post('/loans', [AdminLoanController::class, 'store'])
-            ->name('loans.store');
-        Route::post('/loans/{loan}/approve', [AdminLoanController::class, 'approve'])
-            ->name('loans.approve');
+        Route::get('/loans', [AdminLoanController::class, 'index'])->name('loans.index');
+        Route::get('/loans/create', [AdminLoanController::class, 'create'])->name('loans.create');
+        Route::post('/loans', [AdminLoanController::class, 'store'])->name('loans.store');
+        Route::post('/loans/{loan}/approve', [AdminLoanController::class, 'approve'])->name('loans.approve');
 
         // Contributions
-        Route::get('/contributions', [AdminContributionController::class, 'index'])
-            ->name('contributions.index');
-        Route::get('/contributions/create', [AdminContributionController::class, 'create'])
-            ->name('contributions.create');
-        Route::post('/contributions', [AdminContributionController::class, 'store'])
-            ->name('contributions.store');
+        Route::get('/contributions', [AdminContributionController::class, 'index'])->name('contributions.index');
+        Route::get('/contributions/create', [AdminContributionController::class, 'create'])->name('contributions.create');
+        Route::post('/contributions', [AdminContributionController::class, 'store'])->name('contributions.store');
 
         // Interest Rates
-        Route::get('/interest-rates', [InterestRateController::class, 'index'])
-            ->name('interest-rates.index');
+// Interest Ratesaction: 
+Route::get('/interest-rates', [InterestRateController::class, 'index'])->name('interest-rates.index');
+Route::post('/interest-rates', [InterestRateController::class, 'store'])->name('interest-rates.store');
     });
 
 /*
 |--------------------------------------------------------------------------
-| Admin Only
+| Admin Only Routes
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin')
@@ -107,14 +95,13 @@ Route::prefix('admin')
     ->name('admin.')
     ->group(function () {
 
-        Route::get('/members/pending', [MemberController::class, 'pending'])
-            ->name('members.pending');
-
-        Route::post('/members/{user}/approve', [MemberController::class, 'approve'])
-            ->name('members.approve');
-
-        Route::post('/members/{user}/reject', [MemberController::class, 'reject'])
-            ->name('members.reject');
+        // Members
+        Route::get('/members', [MemberController::class, 'index'])->name('members.index');
+        Route::get('/members/create', [MemberController::class, 'create'])->name('members.create'); // MUST be before {user}
+        Route::post('/members', [MemberController::class, 'store'])->name('members.store');
+        Route::get('/members/{user}', [MemberController::class, 'show'])->name('members.show');
+        Route::post('/members/{user}/approve', [MemberController::class, 'approve'])->name('members.approve');
+        Route::patch('/members/{user}/status', [MemberController::class, 'updateStatus'])->name('members.status');
     });
 
 require __DIR__.'/auth.php';
