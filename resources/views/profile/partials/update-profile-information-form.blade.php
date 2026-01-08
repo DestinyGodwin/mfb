@@ -1,54 +1,34 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
+<section>
+    <header>
+        <h2 class="text-lg font-medium text-gray-900">
+            Profile Information
+        </h2>
+    </header>
 
-            <div class="flex">
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
-                    </a>
-                </div>
+    <form method="POST" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+        @csrf
+        @method('PATCH')
 
-                <div class="hidden space-x-8 sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        Dashboard
-                    </x-nav-link>
-                </div>
-            </div>
+        <x-text-input name="first_name" class="w-full" value="{{ auth()->user()->first_name }}" />
+        <x-text-input name="last_name" class="w-full" value="{{ auth()->user()->last_name }}" />
 
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
-                        <button class="flex items-center gap-2 px-3 py-2 text-sm rounded-md">
+        <x-text-input name="date_of_birth" type="date" class="w-full"
+            value="{{ auth()->user()->date_of_birth }}" />
 
-                            <img
-                                src="{{ auth()->user()->avatar
-                                    ? asset('storage/' . auth()->user()->avatar)
-                                    : asset('images/default-avatar.png') }}"
-                                class="h-8 w-8 rounded-full object-cover"
-                            />
+        <select name="sex" class="w-full border rounded p-2">
+            <option value="male" @selected(auth()->user()->sex === 'male')>Male</option>
+            <option value="female" @selected(auth()->user()->sex === 'female')>Female</option>
+        </select>
 
-                            <span>
-                                {{ auth()->user()->first_name }} {{ auth()->user()->last_name }}
-                            </span>
-                        </button>
-                    </x-slot>
+        <x-text-input name="phone" class="w-full" value="{{ auth()->user()->phone }}" />
+        <x-text-input name="address" class="w-full" value="{{ auth()->user()->address }}" />
 
-                    <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
-                            Profile
-                        </x-dropdown-link>
+        <x-text-input name="place_of_work" class="w-full"
+            value="{{ auth()->user()->place_of_work }}" />
 
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <x-dropdown-link :href="route('logout')"
-                                onclick="event.preventDefault(); this.closest('form').submit();">
-                                Log Out
-                            </x-dropdown-link>
-                        </form>
-                    </x-slot>
-                </x-dropdown>
-            </div>
-        </div>
-    </div>
-</nav>
+        <x-text-input name="department" class="w-full"
+            value="{{ auth()->user()->department }}" />
+
+        <x-primary-button>Save</x-primary-button>
+    </form>
+</section>

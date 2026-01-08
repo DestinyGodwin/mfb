@@ -2,59 +2,65 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Http\RedirectResponse;
+use App\Models\BankAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
+use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
-    public function edit(Request $request): View
+    public function edit()
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
+        return view('profile.edit');
+    }
+
+    public function update(Request $request)
+    {
+        $data = $request->validate([
+            'first_name'     => 'required|string|max:255',
+            'last_name'      => 'required|string|max:255',
+            'date_of_birth'  => 'required|date',
+            'sex'            => 'required|in:male,female',
+            'phone'          => 'required|string|max:20',
+            'address'        => 'required|string|max:255',
+            'place_of_work'  => 'nullable|string|max:255',
+            'department'     => 'nullable|string|max:255',
         ]);
+
+        $request->user()->update($data);
+
+        return back()->with('status', 'profile-updated');
     }
 
-    /**
-     * Update the user's profile information.
-     */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function updateBankAccount(Request $request)
     {
-        $request->user()->fill($request->validated());
+        $data = $request->validate([
+            'bank_name'      => 'required|string|max:255',
+            'account_number' => 'required|string|max:20',
+        ]);
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
+        BankAccount::updateOrCreate(
+            ['user_id' => $request->user()->id],
+            $data
+        );
 
-        $request->user()->save();
-
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return back()->with('status', 'bank-account-updated');
     }
 
-    /**
-     * Delete the user's account.
-     */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request)
     {
-        $request->validateWithBag('userDeletion', [
+        $request->validate([
             'password' => ['required', 'current_password'],
         ]);
 
         $user = $request->user();
 
         Auth::logout();
-
         $user->delete();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return Redirect::to('/');
+        return redirect('/');
     }
 }
