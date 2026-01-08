@@ -1,14 +1,15 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Models\Contribution;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\ContributionController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\Admin\BankAccountController;
 use App\Http\Controllers\Admin\InterestRateController;
 use App\Http\Controllers\Admin\LoanController as AdminLoanController;
-use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\ContributionController as AdminContributionController;
 
 /*
@@ -104,6 +105,20 @@ Route::prefix('admin')
         Route::get('/members/{user}', [MemberController::class, 'show'])->name('members.show');
         Route::post('/members/{user}/approve', [MemberController::class, 'approve'])->name('members.approve');
         Route::patch('/members/{user}/status', [MemberController::class, 'updateStatus'])->name('members.status');
+    });
+Route::prefix('admin')
+    ->middleware(['auth', 'role:admin|finance'])
+    ->name('admin.')
+    ->group(function () {
+
+        Route::get('/bank-accounts', [BankAccountController::class, 'index'])
+            ->name('bank-accounts.index');
+
+        Route::get('/bank-accounts/export/excel', [BankAccountController::class, 'exportExcel'])
+            ->name('bank-accounts.export.excel');
+
+        Route::get('/bank-accounts/export/pdf', [BankAccountController::class, 'exportPdf'])
+            ->name('bank-accounts.export.pdf');
     });
 
 require __DIR__.'/auth.php';

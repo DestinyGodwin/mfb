@@ -29,10 +29,14 @@
                     Interest Rates
                 </x-nav-link>
 
+                <x-nav-link :href="route('admin.bank-accounts.index')" :active="request()->routeIs('admin.bank-accounts.*')">
+                    Bank Accounts
+                </x-nav-link>
+
+
                 <hr class="my-2">
 
-                <a href="{{ route('dashboard') }}"
-                   class="block w-full px-3 py-2 text-gray-600 hover:bg-gray-100 rounded">
+                <a href="{{ route('dashboard') }}" class="block w-full px-3 py-2 text-gray-600 hover:bg-gray-100 rounded">
                     ← User Area
                 </a>
             </nav>
