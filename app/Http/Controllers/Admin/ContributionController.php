@@ -2,62 +2,34 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\User;
-use App\Models\Contribution;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Services\ContributionService;
 use App\Http\Requests\Admin\StoreContributionRequest;
+use App\Models\Contribution;
+use App\Models\User;
+use App\Services\ContributionService;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ContributionsExport;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ContributionController extends Controller
 {
-    // public function index(Request $request)
-    // {
-    //     $query = Contribution::with(['member', 'recorder'])
-    //         ->latest('contribution_date');
-
-    //     if ($request->filled(['from', 'to'])) {
-    //         $query->whereBetween('contribution_date', [
-    //             $request->date('from'),
-    //             $request->date('to'),
-    //         ]);
-    //     }
-
-    //     if ($request->filled('user_id')) {
-    //         $query->where('user_id', $request->user_id);
-    //     }
-
-    //     return view('admin.contributions.index', [
-    //         'contributions' => $query->paginate(20),
-    //         'total' => (clone $query)->sum('amount'),
-    //         'members' => User::approved()->get(),
-    //     ]);
-    // }
-
     public function index(Request $request)
-{
-    $query = Contribution::with(['member', 'recorder'])
-        ->latest('contribution_date');
+    {
+        $query = $this->filteredQuery($request);
 
-    if ($request->filled(['from', 'to'])) {
-        $query->whereBetween('contribution_date', [
-            $request->date('from'),
-            $request->date('to'),
+        $contributions = $query->paginate(20)->withQueryString();
+
+        $totalAmount = $query->sum('amount');
+        $selectedMemberNames = $this->getSelectedMemberNames($request);
+
+        return view('admin.contributions.index', [
+            'contributions' => $contributions,
+            'members' => User::approved()->get(),
+            'totalAmount' => $totalAmount,
+            'selectedMemberNames' => $selectedMemberNames,
         ]);
     }
-
-    if ($request->filled('user_id')) {
-        $query->where('user_id', $request->user_id);
-    }
-
-    return view('admin.contributions.index', [
-        'contributions' => $query->paginate(20)->withQueryString(),
-        'members' => User::approved()->get(),
-        'year' => now()->year,
-        'yearTotal' => Contribution::whereYear('contribution_date', now()->year)->sum('amount'),
-    ]);
-}
-
 
     public function create()
     {
@@ -66,10 +38,8 @@ class ContributionController extends Controller
         ]);
     }
 
-    public function store(
-        StoreContributionRequest $request,
-        ContributionService $service
-    ) {
+    public function store(StoreContributionRequest $request, ContributionService $service)
+    {
         $service->record(
             User::findOrFail($request->user_id),
             $request->amount,
@@ -80,5 +50,63 @@ class ContributionController extends Controller
         return redirect()
             ->route('admin.contributions.index')
             ->with('status', 'Contribution recorded.');
+    }
+
+    private function filteredQuery(Request $request)
+    {
+        $query = Contribution::with(['member', 'recorder'])->latest('contribution_date');
+
+        if ($request->filled(['from', 'to'])) {
+            $query->whereBetween('contribution_date', [$request->from, $request->to]);
+        }
+
+        if ($request->filled('user_ids')) {
+            $query->whereIn('user_id', $request->user_ids);
+        }
+
+        return $query;
+    }
+
+    private function getSelectedMemberNames(Request $request)
+    {
+        if (empty($request->user_ids)) return 'All Members';
+
+        return User::whereIn('id', $request->user_ids)
+            ->get()
+            ->map(fn ($u) => $u->first_name.' '.$u->last_name)
+            ->join(', ');
+    }
+
+    // Excel Export
+    public function exportExcel(Request $request)
+    {
+        $fileName = $this->getExportFileName($request, 'contributions') . '.xlsx';
+        return Excel::download(new ContributionsExport($request), $fileName);
+    }
+
+    // PDF Export
+    public function exportPdf(Request $request)
+    {
+        $contributions = $this->filteredQuery($request)->get();
+        $selectedMembers = $this->getSelectedMemberNames($request);
+        $totalAmount = $contributions->sum('amount');
+
+        $pdf = Pdf::loadView('admin.contributions.export-pdf', [
+            'contributions' => $contributions,
+            'totalAmount' => $totalAmount,
+            'selectedMembers' => $selectedMembers,
+            'from' => $request->from,
+            'to' => $request->to,
+        ]);
+
+        return $pdf->download($this->getExportFileName($request, 'contributions') . '.pdf');
+    }
+
+    private function getExportFileName(Request $request, $prefix)
+    {
+        $members = $this->getSelectedMemberNames($request);
+        $from = $request->from ?? 'start';
+        $to = $request->to ?? 'end';
+        return "{$prefix}_{$members}_{$from}_to_{$to}";
     }
 }

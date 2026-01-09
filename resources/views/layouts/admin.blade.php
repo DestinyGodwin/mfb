@@ -1,4 +1,14 @@
 <x-app-layout>
+    {{-- Styles pushed from child views --}}
+    @stack('styles')
+
+    {{-- Global Select2 fix --}}
+    <style>
+        .select2-container {
+            width: 100% !important;
+        }
+    </style>
+
     <div class="flex min-h-screen bg-gray-100">
 
         {{-- Sidebar --}}
@@ -8,7 +18,6 @@
             </div>
 
             <nav class="flex-1 p-4 space-y-2 text-sm flex flex-col">
-                {{-- Each link is a full-width block --}}
                 <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                     Dashboard
                 </x-nav-link>
@@ -33,10 +42,10 @@
                     Bank Accounts
                 </x-nav-link>
 
-
                 <hr class="my-2">
 
-                <a href="{{ route('dashboard') }}" class="block w-full px-3 py-2 text-gray-600 hover:bg-gray-100 rounded">
+                <a href="{{ route('dashboard') }}"
+                   class="block w-full px-3 py-2 text-gray-600 hover:bg-gray-100 rounded">
                     ← User Area
                 </a>
             </nav>
@@ -56,4 +65,7 @@
         </main>
 
     </div>
+
+    {{-- Scripts pushed from child views --}}
+    @stack('scripts')
 </x-app-layout>
