@@ -140,5 +140,16 @@ Route::prefix('admin')
             ->name('profit-rates.activate');
     });
 
+Route::prefix('admin')
+    ->middleware(['auth', 'role:admin|finance'])
+    ->name('admin.')
+    ->group(function () {
+
+        Route::get('/profits/export/excel', [ProfitDistributionController::class, 'exportExcel'])
+            ->name('profits.export.excel');
+
+        Route::get('/profits/export/pdf', [ProfitDistributionController::class, 'exportPdf'])
+            ->name('profits.export.pdf');
+    });
 
 require __DIR__.'/auth.php';

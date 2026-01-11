@@ -1,133 +1,94 @@
-<x-admin-layout title="Contributions">
+<x-admin-layout title="Annual Profit Distribution">
 
-    {{-- Success message --}}
     @if(session('status'))
-        <div class="p-4 mb-4 bg-green-100 text-green-800 rounded">
+        <div class="mb-4 rounded bg-green-100 text-green-800 px-4 py-2">
             {{ session('status') }}
         </div>
     @endif
 
-    {{-- Filter + Actions --}}
-    <div class="flex flex-col md:flex-row justify-between items-end gap-4 mb-6">
+    {{-- Actions --}}
+    <div class="bg-white rounded shadow p-6 mb-6">
+        <div class="flex flex-col md:flex-row justify-between items-end gap-4">
 
-        <form method="GET" class="flex flex-col sm:flex-row gap-2 items-end flex-1">
+            <form method="POST"
+                  action="{{ route('admin.profits.distribute') }}"
+                  class="flex flex-col sm:flex-row gap-4 items-end flex-1">
+                @csrf
 
-            <div class="flex flex-col">
-                <label class="text-xs text-gray-500">From</label>
-                <input type="date" name="from" value="{{ request('from') }}" class="border rounded px-2 py-1">
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Year</label>
+                    <input
+                        type="number"
+                        name="year"
+                        value="{{ $year }}"
+                        required
+                        class="w-40 border rounded px-3 py-2 focus:outline-none focus:ring"
+                    >
+                </div>
+
+                <button
+                    type="submit"
+                    class="bg-indigo-600 text-white px-5 py-2 rounded hover:bg-indigo-700 transition"
+                >
+                    Distribute Profit
+                </button>
+            </form>
+
+            <div class="flex gap-2">
+                <a href="{{ route('admin.profits.export.excel', ['year' => $year]) }}"
+                   class="px-4 py-2 bg-green-600 text-white rounded">
+                    Export Excel
+                </a>
+
+                <a href="{{ route('admin.profits.export.pdf', ['year' => $year]) }}"
+                   class="px-4 py-2 bg-red-600 text-white rounded">
+                    Export PDF
+                </a>
             </div>
 
-            <div class="flex flex-col">
-                <label class="text-xs text-gray-500">To</label>
-                <input type="date" name="to" value="{{ request('to') }}" class="border rounded px-2 py-1">
-            </div>
-
-            <div class="flex flex-col w-full sm:w-64">
-                <label class="text-xs text-gray-500">Members</label>
-                <select name="user_ids[]" multiple id="members-select" class="border rounded px-2 py-1">
-                    @foreach ($members as $member)
-                        <option value="{{ $member->id }}"
-                            @selected(collect(request('user_ids'))->contains($member->id))>
-                            {{ $member->first_name }} {{ $member->last_name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <button class="px-4 py-2 bg-gray-800 text-white rounded mt-2 sm:mt-0">Filter</button>
-        </form>
-
-        <div class="flex gap-2">
-            <a href="{{ route('admin.contributions.export.excel', request()->query()) }}" class="px-4 py-2 bg-green-600 text-white rounded">Export Excel</a>
-            <a href="{{ route('admin.contributions.export.pdf', request()->query()) }}" class="px-4 py-2 bg-red-600 text-white rounded">Export PDF</a>
-            <a href="{{ route('admin.contributions.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded">+ Add Contribution</a>
         </div>
     </div>
 
-    {{-- Summary --}}
-    <div class="bg-white p-6 rounded shadow mb-6">
-        <p class="text-sm text-gray-500">Summary</p>
-        <div class="mt-2 text-sm space-y-1">
-            <p><strong>Period:</strong> {{ request('from') ?? 'Beginning' }} → {{ request('to') ?? 'Today' }}</p>
-            <p><strong>Members:</strong> {{ $selectedMemberNames }}</p>
-            <p class="text-xl font-bold mt-2">Total: ₦{{ number_format($totalAmount, 2) }}</p>
+    {{-- Distribution Table --}}
+    <div class="bg-white rounded shadow p-6">
+        <h3 class="text-lg font-semibold mb-4">Distribution Breakdown</h3>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm border-collapse">
+                <thead>
+                    <tr class="bg-gray-100 text-left">
+                        <th class="px-4 py-2 border">Member</th>
+                        <th class="px-4 py-2 border">Total Contribution</th>
+                        <th class="px-4 py-2 border">Profit</th>
+                        <th class="px-4 py-2 border">Distributed At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($profits as $p)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 border">
+                                {{ $p->user->first_name }} {{ $p->user->last_name }}
+                            </td>
+                            <td class="px-4 py-2 border">
+                                ₦{{ number_format($p->total_contribution, 2) }}
+                            </td>
+                            <td class="px-4 py-2 border font-semibold">
+                                ₦{{ number_format($p->profit_amount, 2) }}
+                            </td>
+                            <td class="px-4 py-2 border text-sm text-gray-600">
+                                {{ optional($p->distributed_at)->format('Y-m-d') }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="px-4 py-6 text-center text-gray-500">
+                                No profit distributed for this year.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
-
-    {{-- Contributions Table --}}
-    <div class="bg-white shadow rounded overflow-x-auto">
-        <table class="w-full text-sm min-w-[600px]">
-            <thead class="border-b bg-gray-50">
-                <tr>
-                    <th class="p-3 text-left">Date</th>
-                    <th class="p-3 text-left">Member</th>
-                    <th class="p-3 text-left">Amount</th>
-                    <th class="p-3 text-left">Recorded By</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($contributions as $c)
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="p-3">{{ $c->contribution_date->format('d M Y') }}</td>
-                        <td class="p-3">{{ $c->member->first_name }} {{ $c->member->last_name }}</td>
-                        <td class="p-3">₦{{ number_format($c->amount, 2) }}</td>
-                        <td class="p-3">{{ $c->recorder?->first_name ?? '—' }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="4" class="p-6 text-center text-gray-500">No contributions found</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    {{-- Pagination --}}
-    <div class="mt-4">{{ $contributions->links() }}</div>
-
-    @push('styles')
-        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-        <style>
-            .select2-container--default .select2-selection--multiple {
-                border: 1px solid #d1d5db !important;
-                border-radius: 0.375rem !important;
-                padding: 0.25rem !important;
-                min-height: 38px !important;
-            }
-            .select2-container--default .select2-selection--multiple .select2-selection__choice {
-                background-color: #3b82f6;
-                color: white;
-                border: none;
-                border-radius: 0.25rem;
-                padding: 0.125rem 0.5rem;
-                margin-right: 0.25rem;
-                margin-bottom: 0.25rem;
-            }
-            .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-                color: white;
-                margin-right: 0.25rem;
-            }
-            .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
-                color: #fbbf24;
-            }
-        </style>
-    @endpush
-
-    @push('scripts')
-        <!-- Load jQuery first -->
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <!-- Then load Select2 -->
-        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-        <script>
-            $(document).ready(function() {
-                $('#members-select').select2({
-                    placeholder: 'Select members...',
-                    allowClear: true,
-                    width: '100%',
-                    closeOnSelect: false
-                });
-            });
-        </script>
-    @endpush
 
 </x-admin-layout>
