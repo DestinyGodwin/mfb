@@ -42,10 +42,18 @@
                     Bank Accounts
                 </x-nav-link>
 
+                <x-nav-link :href="route('admin.profits.index')" :active="request()->routeIs('admin.profits.*')">
+                    Profit Distribution
+                </x-nav-link>
+
+                <x-nav-link :href="route('admin.profit-rates.index')" :active="request()->routeIs('admin.profit-rates.*')">
+                    Profit Rates
+                </x-nav-link>
+
+
                 <hr class="my-2">
 
-                <a href="{{ route('dashboard') }}"
-                   class="block w-full px-3 py-2 text-gray-600 hover:bg-gray-100 rounded">
+                <a href="{{ route('dashboard') }}" class="block w-full px-3 py-2 text-gray-600 hover:bg-gray-100 rounded">
                     ← User Area
                 </a>
             </nav>

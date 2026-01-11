@@ -12,13 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('profit_rates', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->unsignedInteger('year')->unique();
+            $table->decimal('percentage', 5, 2);
+            $table->boolean('active')->default(false);
             $table->timestamps();
         });
     }
 
     /**
-     * Reverse the migrations.
+ * Reverse the migrations.
      */
     public function down(): void
     {

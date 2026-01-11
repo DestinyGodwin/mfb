@@ -1,16 +1,18 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\LoanController;
-use App\Http\Controllers\ContributionController;
-use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\Admin\LoanController as AdminLoanController;
-use App\Http\Controllers\Admin\ContributionController as AdminContributionController;
-use App\Http\Controllers\Admin\MemberController;
-use App\Http\Controllers\Admin\InterestRateController;
-use App\Http\Controllers\Admin\BankAccountController;
 use App\Models\Contribution;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LoanController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\MemberController;
+use App\Http\Controllers\ContributionController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\Admin\ProfitRateController;
+use App\Http\Controllers\Admin\BankAccountController;
+use App\Http\Controllers\Admin\InterestRateController;
+use App\Http\Controllers\Admin\ProfitDistributionController;
+use App\Http\Controllers\Admin\LoanController as AdminLoanController;
+use App\Http\Controllers\Admin\ContributionController as AdminContributionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -111,5 +113,32 @@ Route::prefix('admin')
         Route::post('/members/{user}/approve', [MemberController::class, 'approve'])->name('members.approve');
         Route::patch('/members/{user}/status', [MemberController::class, 'updateStatus'])->name('members.status');
     });
+Route::prefix('admin')
+    ->middleware(['auth', 'role:admin|finance'])
+    ->name('admin.')
+    ->group(function () {
+
+        Route::get('/profits', [ProfitDistributionController::class, 'index'])
+            ->name('profits.index');
+
+        Route::post('/profits/distribute', [ProfitDistributionController::class, 'distribute'])
+            ->name('profits.distribute');
+    });
+
+Route::prefix('admin')
+    ->middleware(['auth', 'role:admin|finance'])
+    ->name('admin.')
+    ->group(function () {
+
+        Route::get('/profit-rates', [ProfitRateController::class, 'index'])
+            ->name('profit-rates.index');
+
+        Route::post('/profit-rates', [ProfitRateController::class, 'store'])
+            ->name('profit-rates.store');
+
+        Route::post('/profit-rates/{profitRate}/activate', [ProfitRateController::class, 'activate'])
+            ->name('profit-rates.activate');
+    });
+
 
 require __DIR__.'/auth.php';
