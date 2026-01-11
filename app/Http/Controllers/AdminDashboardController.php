@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Loan;
-use App\Models\User;
-use App\Models\ProfitRate;
 use App\Models\Contribution;
+use App\Models\Loan;
 use App\Models\ProfitDistribution;
+use App\Models\ProfitRate;
+use App\Models\User;
 
 class AdminDashboardController extends Controller
 {
@@ -34,13 +34,12 @@ class AdminDashboardController extends Controller
     //     ));
     // }
 
-       public function index()
+    public function index()
     {
         $year = now()->year;
 
         $totalMembers = User::count();
-        $pendingMembers = User::where('status', 'pending')->count();
-
+        $pendingMembers = User::where('approved', false)->count();
         $totalLoans = Loan::count();
         $pendingLoans = Loan::where('status', 'pending')->count();
         $totalLoanAmount = Loan::sum('principal');
