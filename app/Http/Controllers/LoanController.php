@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Loan\RequestLoanRequest;
 use App\Services\LoanService;
 use Illuminate\Support\Facades\Auth;
+use App\Services\InterestRateService;
+use App\Http\Requests\Loan\RequestLoanRequest;
 
 class LoanController extends Controller
 {
@@ -19,16 +20,26 @@ class LoanController extends Controller
 }
 
 
-    public function store(RequestLoanRequest $request, LoanService $service)
-    {
-        $service->request(
-            Auth::user(),
-            $request->principal,
-            $request->duration_years
-        );
+    
+public function store(
+    RequestLoanRequest $request,
+    LoanService $loanService,
+    InterestRateService $rateService
+) {
+    $rate = $rateService->active();
 
-        return redirect()
-            ->route('loans.index')
-            ->with('status', 'Loan request submitted and awaiting approval');
-    }
+    abort_if(! $rate, 500, 'No active interest rate configured');
+
+    $loanService->create([
+        'user_id' => Auth::id(),
+        'principal' => $request->principal,
+        'duration_years' => $request->duration_years,
+        'interest_rate' => $rate->rate,
+    ]);
+
+    return redirect()
+        ->route('loans.index')
+        ->with('status', 'Loan request submitted and awaiting approval');
+}
+
 }
